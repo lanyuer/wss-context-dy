@@ -7,9 +7,9 @@
 * 本地开发 OR 云函数
 */
 const playwright = require('playwright-aws-lambda');
-//import { Browser, Page, chromium, BrowserContext, LaunchOptions, Cookie } from 'playwright';
-//const { chromium } = require('playwright-chromium');
-import { crypto } from 'crypto';
+const crypto = require('crypto');
+
+import { Browser, Page, chromium, BrowserContext, LaunchOptions, Cookie } from 'playwright';
 import { parse } from "url";
 /*
 interface LivingRoomContext {
