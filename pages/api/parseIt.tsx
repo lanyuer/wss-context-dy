@@ -1,4 +1,11 @@
-import { Browser, Page, chromium, BrowserContext, LaunchOptions, Cookie } from 'playwright';
+import { Browser, Page, BrowserContext, LaunchOptions, Cookie } from 'playwright';
+
+// 云函数执行，https://kejiweixun.com/blog/using-puppeteer-in-vercel-serverless-function
+const chromium = require('chrome-aws-lambda');
+
+//const { chromium } = require('playwright-chromium');
+
+
 import * as fs from 'fs';
 import * as util from 'util';
 import * as crypto from 'crypto';
@@ -149,7 +156,7 @@ class DyPagePl {
       .update(Object.entries(params).map(([k, v]) => `${k}=${v}`).join(','))
       .digest('hex');
 
-	
+
 
     const signature = await page.evaluate(async (xmstub) => {
       const s = { 'X-MS-STUB': `'${xmstub}'` };
