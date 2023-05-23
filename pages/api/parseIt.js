@@ -1,23 +1,17 @@
-import { Browser, Page, BrowserContext, LaunchOptions, Cookie } from 'playwright';
+//import { Browser, Page, BrowserContext, LaunchOptions, Cookie } from 'playwright';
 
 // 云函数执行，https://kejiweixun.com/blog/using-puppeteer-in-vercel-serverless-function
-const chromium = require('chrome-aws-lambda');
+// https://scrapingant.com/blog/how-to-run-playwright-on-aws-lambda
 
+/**
+* 本地开发 OR 云函数
+*/
+const playwright = require('playwright-aws-lambda');
+//import { Browser, Page, chromium, BrowserContext, LaunchOptions, Cookie } from 'playwright';
 //const { chromium } = require('playwright-chromium');
-
-
-import * as fs from 'fs';
-import * as util from 'util';
-import * as crypto from 'crypto';
-import * as secrets from 'secrets';
-import { promisify } from 'util';
-import { NextApiRequest, NextApiResponse } from "next";
+import { crypto } from 'crypto';
 import { parse } from "url";
-
-
-const readFile = util.promisify(fs.readFile);
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
+/*
 interface LivingRoomContext {
   url: string;
   room_id: string;
@@ -38,6 +32,7 @@ interface LivingRoomContext {
   tm: number;
   tm_create: string;
 }
+*/
 
 const MAX_RESTART_PAGES = 10;
 const live_id = 1;
@@ -53,6 +48,7 @@ const ac = '';
 const identity = 'audience';
 const wss_push_did = '7200658128986916404';
 
+/*
 declare global {
   interface Window {
     byted_acrawler: {
@@ -60,12 +56,16 @@ declare global {
     };
   }
 }
+*/
 
 class DyPagePl {
+  /*
   private pm: any;
   private browser: any;
   private context: any;
   private user_agent: string;
+  */
+
 
   constructor() {
     this.browser = null;
@@ -75,8 +75,13 @@ class DyPagePl {
 
   async openBrowser() {
 
-    this.browser = await chromium.launch({ headless: true, timeout: 40000 });
+    /**
+     * 本地开发 OR 云函数
+     */
+    this.browser = await playwright.launchChromium({ headless: true, timeout: 40000 });
+    //this.browser = await chromium.launch({ headless: true, timeout: 40000 });
     this.context = await this.browser.newContext({ userAgent: this.user_agent });
+
     //const cookies = JSON.parse(await readFile('cookies.json', 'utf-8'));
     //await this.context.addCookies(cookies);
   }
@@ -93,7 +98,8 @@ class DyPagePl {
     await this.browser.close();
   }
 
-  async getWebsocketUrl(url: string): Promise<LivingRoomContext | null> {
+  // async getWebsocketUrl(url: string): Promise<LivingRoomContext | null> {
+  async getWebsocketUrl(url) {
     const page = await this.context.newPage();
 
     await page.setDefaultTimeout(60000);
@@ -229,7 +235,8 @@ class DyPagePl {
       }
     }
 
-    const ctx: LivingRoomContext = {
+    const ctx = {
+      //const ctx: LivingRoomContext = {
       url: url,
       room_id: room_id,
       title: title,
@@ -257,13 +264,14 @@ class DyPagePl {
   }
 }
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+//export default async (req: NextApiRequest, res: NextApiResponse) => {
+export default async (req, res) => {
   // 调用 DyPagePl的getWebsocketUrl，将req中的url参数作为参数，返回结果用json包装 
 
   const { query } = parse(req.url || "", true);
 
   const regex = /^https:\/\/live\.douyin\.com\/\d+$/;
-  if (!regex.test(query.url as string)) {
+  if (!regex.test(query.url)) {
     res.status(400).json({ err_no: -1, err_msg: 'url参数格式错误' });
     return;
   }
@@ -271,7 +279,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const dyPagePl = new DyPagePl();
   await dyPagePl.startBrowser()
   try {
-    const livingRoomContext = await dyPagePl.getWebsocketUrl(query.url as string);
+    const livingRoomContext = await dyPagePl.getWebsocketUrl(query.url);
     res.status(200).json({ data: livingRoomContext, err_no: 0 });
   }
   catch (e) {

@@ -3,12 +3,12 @@ import styled from "styled-components";
 
 export default function Home() {
     const [url, setUrl] = useState("");
-    const [urlParams, setUrlParams] = useState<Record<string, string> | null>(
+    const [urlParams, setUrlParams] = useState(
         null
     );
     const [errorMsg, setErrorMsg] = useState('');
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         const response = await fetch(`/api/parseIt?url=${url}`);
         const result = await response.json();
