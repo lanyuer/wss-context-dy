@@ -1,4 +1,4 @@
-import { Playwright, Browser, Page, chromium, BrowserContext, LaunchOptions, Cookie } from 'playwright';
+import { Browser, Page, chromium, BrowserContext, LaunchOptions, Cookie } from 'playwright';
 import * as fs from 'fs';
 import * as util from 'util';
 import * as crypto from 'crypto';
@@ -45,6 +45,14 @@ const device_type = '';
 const ac = '';
 const identity = 'audience';
 const wss_push_did = '7200658128986916404';
+
+declare global {
+  interface Window {
+    byted_acrawler: {
+      frontierSign: (s: { [key: string]: string }) => string;
+    };
+  }
+}
 
 class DyPagePl {
   private pm: any;
@@ -140,6 +148,8 @@ class DyPagePl {
       .createHash('md5')
       .update(Object.entries(params).map(([k, v]) => `${k}=${v}`).join(','))
       .digest('hex');
+
+	
 
     const signature = await page.evaluate(async (xmstub) => {
       const s = { 'X-MS-STUB': `'${xmstub}'` };
