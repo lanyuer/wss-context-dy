@@ -100,8 +100,8 @@ class DyPagePl {
     /**
      * 本地开发 OR 云函数
      */
-    this.browser = await playwright.launchChromium({ headless: true, timeout: 40000 });
-    //this.browser = await chromium.launch({ headless: true, timeout: 40000 });
+    this.browser = await playwright.launchChromium({ headless: true, timeout: 10000 });
+    //this.browser = await chromium.launch({ headless: true, timeout: 10000 });
     this.context = await this.browser.newContext({ userAgent: this.user_agent });
 
     //const cookies = JSON.parse(await readFile('cookies.json', 'utf-8'));
@@ -119,14 +119,16 @@ class DyPagePl {
 
   // async getWebsocketUrl(url: string): Promise<LivingRoomContext | null> {
   async getWebsocketUrl(url) {
-    const page = await this.context.newPage();
+    const start = process.hrtime(); // 记录开始时间
 
-    await page.route('**\/*', (route) => {
+    const page = await this.context.newPage();
+    
+    await page.route('**/*', (route) => {
         return RESOURCE_EXCLUSTIONS.includes(route.request().resourceType())
             ? route.abort()
             : route.continue()
     });
-
+    
     await page.setDefaultTimeout(10000);
     await page.goto(url);
 
@@ -186,8 +188,6 @@ class DyPagePl {
       .createHash('md5')
       .update(Object.entries(params).map(([k, v]) => `${k}=${v}`).join(','))
       .digest('hex');
-
-
 
     const signature = await page.evaluate(async (xmstub) => {
       const s = { 'X-MS-STUB': `'${xmstub}'` };
@@ -260,6 +260,8 @@ class DyPagePl {
       }
     }
 
+    const end = process.hrtime(start); // 记录结束时间并计算耗时
+
     const ctx = {
       //const ctx: LivingRoomContext = {
       url: url,
@@ -280,6 +282,7 @@ class DyPagePl {
       owner_nickname: room.owner.nickname,
       tm: Math.floor(Date.now() / 1000),
       tm_create: formattedDate,
+      cost: `${end[1] / 1000000}ms`,
     };
 
     await page.close();
