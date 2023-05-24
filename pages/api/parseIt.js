@@ -58,6 +58,28 @@ declare global {
 }
 */
 
+/*
+const playwright = require('playwright');
+
+const RESOURCE_EXCLUSTIONS = ['image', 'stylesheet', 'media', 'font','other'];
+
+(async () => {
+    const browser = await playwright['chromium'].launch();
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await page.route('**\/*', (route) => {
+        return RESOURCE_EXCLUSTIONS.includes(route.request().resourceType())
+            ? route.abort()
+            : route.continue()
+    });
+    await page.goto('https://amazon.com');
+
+    await browser.close();
+})();
+*/
+
+const RESOURCE_EXCLUSTIONS = ['image', 'stylesheet', 'media', 'font','other'];
+
 class DyPagePl {
   /*
   private pm: any;
@@ -87,10 +109,7 @@ class DyPagePl {
   }
 
   async startBrowser() {
-    //this.pm = await Playwright.async_playwright().start();
     await this.openBrowser();
-    //return this.pm;
-
   }
 
   async closeBrowser() {
@@ -102,7 +121,13 @@ class DyPagePl {
   async getWebsocketUrl(url) {
     const page = await this.context.newPage();
 
-    await page.setDefaultTimeout(60000);
+    await page.route('**\/*', (route) => {
+        return RESOURCE_EXCLUSTIONS.includes(route.request().resourceType())
+            ? route.abort()
+            : route.continue()
+    });
+
+    await page.setDefaultTimeout(10000);
     await page.goto(url);
 
     const content = await page.content();
