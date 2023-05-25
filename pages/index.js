@@ -1,17 +1,18 @@
 import { useState } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 
 export default function Home() {
     const [url, setUrl] = useState("");
-    const [urlParams, setUrlParams] = useState(
-        null
-    );
+    const [urlParams, setUrlParams] = useState(null);
     const [errorMsg, setErrorMsg] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        setIsLoading(true);
         const response = await fetch(`/api/parseIt?url=${url}`);
         const result = await response.json();
+        setIsLoading(false);
         if (result.err_no === 0) {
             const data = result.data;
             setUrlParams(data);
@@ -31,6 +32,7 @@ export default function Home() {
                     onChange={(event) => setUrl(event.target.value)}
                 />
                 <Button type="submit">Submit</Button>
+                {isLoading && <Loading />}
             </Form>
             {urlParams ? (
                 <Table>
@@ -55,6 +57,23 @@ export default function Home() {
         </Container>
     );
 }
+
+const spin = keyframes`
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+const Loading = styled.div`
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  padding: 20px;
+  border: 5px solid #ccc;
+  border-top-color: #0070f3;
+  animation: ${spin} 1s ease-in-out infinite;
+  margin-left: 10px;
+`;
 
 const Container = styled.div`
     display: flex;
@@ -88,7 +107,7 @@ const Input = styled.input`
 `;
 
 const Button = styled.button`
-    height: 40px;
+    height: 60px;
     border: none;
     border-radius: 5px;
     padding: 10px 20px;

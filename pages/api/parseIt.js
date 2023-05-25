@@ -78,7 +78,8 @@ const RESOURCE_EXCLUSTIONS = ['image', 'stylesheet', 'media', 'font','other'];
 })();
 */
 
-const RESOURCE_EXCLUSTIONS = ['image', 'stylesheet', 'media', 'font','other'];
+const RESOURCE_EXCLUSTIONS = ['image', 'stylesheet', 'media', 'font', 'other'];
+//const RESOURCE_EXCLUSTIONS = [];
 
 class DyPagePl {
   /*
@@ -122,13 +123,20 @@ class DyPagePl {
     const start = process.hrtime(); // 记录开始时间
 
     const page = await this.context.newPage();
-    
-    await page.route('**/*', (route) => {
-        return RESOURCE_EXCLUSTIONS.includes(route.request().resourceType())
-            ? route.abort()
-            : route.continue()
+
+    await this.context.route('**/*', (route) => {
+      return RESOURCE_EXCLUSTIONS.includes(route.request().resourceType())
+        ? route.abort()
+        : route.continue()
     });
-    
+
+    await this.context.route('**.jpg', route => route.abort());
+    await page.route('**/*', (route) => {
+      return RESOURCE_EXCLUSTIONS.includes(route.request().resourceType())
+        ? route.abort()
+        : route.continue()
+    });
+
     await page.setDefaultTimeout(10000);
     await page.goto(url);
 
